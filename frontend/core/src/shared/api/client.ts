@@ -34,6 +34,8 @@ export interface Node {
   title: string;
   description: string;
   content: string;
+  markdown_content?: string;
+  boilerplate?: string;
   order: number;
   completed: boolean;
   path_id: string;
