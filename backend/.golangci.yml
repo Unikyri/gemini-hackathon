@@ -1,0 +1,55 @@
+# golangci-lint configuration
+# Docs: https://golangci-lint.run/usage/configuration/
+
+run:
+  # Timeout for running linters
+  timeout: 5m
+  
+  # Include test files
+  tests: true
+  
+  # Skip vendor directory
+  skip-dirs:
+    - vendor
+
+linters:
+  enable:
+    # Default linters
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Report suspicious constructs
+    - ineffassign   # Detect unused assignments
+    - staticcheck   # Static analysis
+    - unused        # Check for unused code
+    
+    # Additional recommended linters
+    - gofmt         # Check formatting
+    - goimports     # Check imports
+    - misspell      # Find misspellings
+    - bodyclose     # Check HTTP body close
+    - goconst       # Find repeated strings that could be constants
+    - gosec         # Security checks
+    - unconvert     # Remove unnecessary conversions
+
+linters-settings:
+  gosec:
+    # Only report high confidence issues
+    severity: medium
+    confidence: medium
+    excludes:
+      - G104  # Audit errors not checked (we handle this with errcheck)
+  
+  misspell:
+    locale: US
+
+issues:
+  # Maximum issues count per linter
+  max-issues-per-linter: 50
+  max-same-issues: 10
+  
+  exclude-rules:
+    # Ignore some linters in tests
+    - path: _test\.go
+      linters:
+        - gosec
+        - goconst
