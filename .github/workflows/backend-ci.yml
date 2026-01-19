@@ -46,7 +46,16 @@ jobs:
       - name: Verify go.mod is tidy
         run: |
           go mod tidy
-          git diff --exit-code go.mod go.sum || (echo "go.mod or go.sum is not tidy" && exit 1)
+          if ! git diff --exit-code go.mod go.sum; then
+            echo ""
+            echo "❌ ERROR: go.mod or go.sum changed after running 'go mod tidy'"
+            echo ""
+            echo "This means you forgot to run 'go mod tidy' before committing."
+            echo "Please run locally:"
+            echo "  cd backend && go mod tidy"
+            echo "Then commit the updated go.mod and go.sum files."
+            exit 1
+          fi
 
       # 4. Download dependencies
       - name: Download dependencies
