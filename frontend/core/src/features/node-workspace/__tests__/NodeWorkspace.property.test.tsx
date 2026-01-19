@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import * as fc from 'fast-check';
 import { NodeWorkspace } from '../components/NodeWorkspace';
 import * as hooks from '@/shared/hooks';

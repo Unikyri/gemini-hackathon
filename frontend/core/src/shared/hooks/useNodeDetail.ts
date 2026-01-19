@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiService, type GetNodeResponse } from '../api';
 
 interface UseNodeDetailOptions {
@@ -23,7 +23,7 @@ export const useNodeDetail = ({ pathId, nodeId }: UseNodeDetailOptions): UseNode
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchNodeDetail = async () => {
+  const fetchNodeDetail = useCallback(async () => {
     if (!pathId || !nodeId) {
       setNode(null);
       return;
@@ -42,11 +42,11 @@ export const useNodeDetail = ({ pathId, nodeId }: UseNodeDetailOptions): UseNode
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pathId, nodeId]);
 
   useEffect(() => {
     fetchNodeDetail();
-  }, [pathId, nodeId]);
+  }, [fetchNodeDetail]);
 
   return {
     node,

@@ -41,7 +41,7 @@ export interface Node {
   path_id: string;
 }
 
-export interface GetNodeResponse extends Node {}
+export type GetNodeResponse = Node;
 
 // Funciones del cliente API
 export const apiService = {
