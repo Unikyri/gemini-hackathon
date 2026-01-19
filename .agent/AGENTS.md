@@ -24,7 +24,7 @@ AI for Structure → Human for Logic → AI for Feedback
 
 | Capa | Tecnología | Versión |
 |------|------------|---------|
-| **Backend** | Go | 1.21+ |
+| **Backend** | Go | 1.23+ |
 | **Framework HTTP** | Gin | latest |
 | **ORM** | GORM | latest |
 | **Frontend** | React | 19.x |
