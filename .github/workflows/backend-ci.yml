@@ -1,6 +1,6 @@
 # Backend CI Pipeline
 # Runs on every Pull Request and push to main/develop
-# Validates Go code quality and tests
+# Validates Go code quality, tests, and integration tests with PostgreSQL
 
 name: Backend CI
 
@@ -9,11 +9,13 @@ on:
     branches: [main, develop]
     paths:
       - 'backend/**'
+      - 'database/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - 'backend/**'
+      - 'database/**'
       - '.github/workflows/backend-ci.yml'
 
 # Cancel previous runs if a new one starts
@@ -23,7 +25,7 @@ concurrency:
 
 jobs:
   lint-and-test:
-    name: Lint & Test
+    name: Lint & Unit Tests
     runs-on: ubuntu-latest
     
     defaults:
@@ -40,13 +42,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
-          cache-dependency-path: backend/go.mod
+          cache-dependency-path: backend/go.sum
 
       # 3. Verify dependencies
       - name: Verify go.mod is tidy
         run: |
           go mod tidy
-          # Check if go.sum exists (it won't if there are no external dependencies)
           if [ -f go.sum ]; then
             FILES_TO_CHECK="go.mod go.sum"
           else
@@ -79,11 +80,11 @@ jobs:
           working-directory: ./backend
           args: --timeout=5m
 
-      # 7. Run tests with coverage
-      - name: Run tests
+      # 7. Run unit tests (without database)
+      - name: Run unit tests
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
-      # 8. Upload coverage report (optional - integrates with Codecov)
+      # 8. Upload coverage report
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
         if: github.event_name == 'push'
@@ -94,7 +95,62 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  # Security scan for vulnerabilities in dependencies
+  # Integration tests with PostgreSQL
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gemini_hackathon
+        options: >-
+          --health-cmd "pg_isready -U postgres -d gemini_hackathon"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: backend/go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      # Run database migrations
+      - name: Run migrations
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d gemini_hackathon -f ../database/migrations/001_initial_schema.sql
+
+      # Run integration tests
+      - name: Run integration tests
+        env:
+          INTEGRATION_TEST: "true"
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: gemini_hackathon
+          DB_SSLMODE: disable
+        run: go test -v -race ./internal/adapter/repository/...
+
+  # Security scan for vulnerabilities
   security:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -113,7 +169,6 @@ jobs:
         with:
           go-version: '1.23'
 
-      # Run govulncheck for known vulnerabilities
       - name: Run govulncheck
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
