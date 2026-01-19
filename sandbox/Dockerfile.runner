@@ -9,7 +9,7 @@
 # =============================================================================
 
 # Etapa 1: Imagen base mínima con Go
-FROM golang:1.21-alpine AS base
+FROM golang:1.22-alpine AS base
 
 # Instalar certificados CA (por si acaso, aunque red estará deshabilitada)
 RUN apk --no-cache add ca-certificates

@@ -39,7 +39,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
           cache-dependency-path: backend/go.mod
 
       # 3. Verify dependencies
@@ -111,7 +111,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
 
       # Run govulncheck for known vulnerabilities
       - name: Run govulncheck
