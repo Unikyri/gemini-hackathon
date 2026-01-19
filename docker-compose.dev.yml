@@ -1,0 +1,38 @@
+# Docker Compose for Development Database
+# This file provides a PostgreSQL instance for local development and testing.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d    # Start database
+#   docker compose -f docker-compose.dev.yml down     # Stop database
+#   docker compose -f docker-compose.dev.yml down -v  # Stop and remove data
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gemini-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gemini_hackathon
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # Persist database data
+      - postgres_data:/var/lib/postgresql/data
+      # Run initialization scripts on first startup
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d gemini_hackathon" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
