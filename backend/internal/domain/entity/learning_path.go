@@ -1,10 +1,10 @@
-// Package entity contiene las entidades de dominio del negocio.
-// Las entidades NO deben tener dependencias de frameworks externos.
+// Package entity contains the domain business entities.
+// Entities MUST NOT have dependencies on external frameworks.
 package entity
 
 import "time"
 
-// PathStatus representa el estado de un learning path
+// PathStatus represents the status of a learning path
 type PathStatus string
 
 const (
@@ -13,24 +13,24 @@ const (
 	PathStatusArchived  PathStatus = "archived"
 )
 
-// LearningPath representa una ruta de aprendizaje generada por IA
+// LearningPath represents an AI-generated learning path
 type LearningPath struct {
 	ID        string     // UUID v4
-	UserID    string     // ID del usuario (anonymous en Sprint 1)
-	Topic     string     // Prompt original del usuario
-	Title     string     // Título generado por IA
-	Status    PathStatus // Estado actual del path
+	UserID    string     // User ID (anonymous in Sprint 1)
+	Topic     string     // Original user prompt
+	Title     string     // AI-generated title
+	Status    PathStatus // Current path status
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Nodes     []PathNode // Nodos del path (cargados opcionalmente)
+	Nodes     []PathNode // Path nodes (loaded optionally)
 }
 
-// IsActive verifica si el path está activo
+// IsActive checks if the path is active
 func (p *LearningPath) IsActive() bool {
 	return p.Status == PathStatusActive
 }
 
-// MarkAsCompleted marca el path como completado
+// MarkAsCompleted marks the path as completed
 func (p *LearningPath) MarkAsCompleted() {
 	p.Status = PathStatusCompleted
 	p.UpdatedAt = time.Now()

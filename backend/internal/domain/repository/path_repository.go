@@ -1,5 +1,5 @@
-// Package repository define las interfaces de persistencia.
-// Las implementaciones concretas están en adapter/repository.
+// Package repository defines the persistence interfaces.
+// Concrete implementations are in adapter/repository.
 package repository
 
 import (
@@ -8,20 +8,20 @@ import (
 	"gemini-hackathon/internal/domain/entity"
 )
 
-// PathRepository define las operaciones de persistencia para LearningPath
+// PathRepository defines persistence operations for LearningPath
 type PathRepository interface {
-	// Create guarda un nuevo path en la base de datos
+	// Create saves a new path to the database
 	Create(ctx context.Context, path *entity.LearningPath) error
 
-	// GetByID obtiene un path por su ID (sin nodos)
+	// GetByID retrieves a path by its ID (without nodes)
 	GetByID(ctx context.Context, id string) (*entity.LearningPath, error)
 
-	// GetByIDWithNodes obtiene un path con todos sus nodos
+	// GetByIDWithNodes retrieves a path with all its nodes
 	GetByIDWithNodes(ctx context.Context, id string) (*entity.LearningPath, error)
 
-	// GetByUserID obtiene todos los paths de un usuario
+	// GetByUserID retrieves all paths for a user
 	GetByUserID(ctx context.Context, userID string) ([]*entity.LearningPath, error)
 
-	// UpdateStatus actualiza el estado de un path
+	// UpdateStatus updates the status of a path
 	UpdateStatus(ctx context.Context, id string, status entity.PathStatus) error
 }

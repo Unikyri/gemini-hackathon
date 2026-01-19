@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-// NodeStatus representa el estado de un nodo dentro del path
+// NodeStatus represents the status of a node within the path
 type NodeStatus string
 
 const (
@@ -11,34 +11,34 @@ const (
 	NodeStatusCompleted NodeStatus = "completed"
 )
 
-// PathNode representa un ejercicio dentro de un learning path
+// PathNode represents an exercise within a learning path
 type PathNode struct {
 	ID                   string     // UUID v4
-	PathID               string     // FK a LearningPath
-	Position             int        // Orden del nodo (1, 2, 3...)
-	Title                string     // Título del ejercicio
-	Description          string     // Descripción corta
-	MarkdownContent      string     // Enunciado completo en Markdown
-	BoilerplateCode      string     // Código inicial para el estudiante
-	DocumentationSnippet string     // Mini-documentación relevante
-	HiddenTests          string     // Tests ocultos en formato JSON
-	Status               NodeStatus // Estado actual del nodo
-	XPReward             int        // Puntos por completar
+	PathID               string     // FK to LearningPath
+	Position             int        // Node order (1, 2, 3...)
+	Title                string     // Exercise title
+	Description          string     // Short description
+	MarkdownContent      string     // Full exercise statement in Markdown
+	BoilerplateCode      string     // Initial code for the student
+	DocumentationSnippet string     // Relevant mini-documentation
+	HiddenTests          string     // Hidden tests in JSON format
+	Status               NodeStatus // Current node status
+	XPReward             int        // Points earned on completion
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 }
 
-// IsUnlocked verifica si el nodo está disponible para resolver
+// IsUnlocked checks if the node is available to solve
 func (n *PathNode) IsUnlocked() bool {
 	return n.Status == NodeStatusUnlocked
 }
 
-// IsCompleted verifica si el nodo ya fue completado
+// IsCompleted checks if the node has been completed
 func (n *PathNode) IsCompleted() bool {
 	return n.Status == NodeStatusCompleted
 }
 
-// Unlock desbloquea el nodo para que pueda ser resuelto
+// Unlock unlocks the node so it can be solved
 func (n *PathNode) Unlock() {
 	if n.Status == NodeStatusLocked {
 		n.Status = NodeStatusUnlocked
@@ -46,7 +46,7 @@ func (n *PathNode) Unlock() {
 	}
 }
 
-// Complete marca el nodo como completado
+// Complete marks the node as completed
 func (n *PathNode) Complete() {
 	if n.Status == NodeStatusUnlocked {
 		n.Status = NodeStatusCompleted
