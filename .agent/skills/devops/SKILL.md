@@ -17,7 +17,7 @@ Incluye configuración para el sandbox seguro de ejecución de código.
 ### Dockerfile para API
 ```dockerfile
 # backend/Dockerfile
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -96,7 +96,7 @@ volumes:
 ### Dockerfile Seguro para Ejecución de Código
 ```dockerfile
 # sandbox/Dockerfile.runner
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 
 # Crear usuario no-root
 RUN addgroup -S runner && adduser -S runner -G runner
@@ -175,7 +175,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.23'
           cache-dependency-path: backend/go.sum
       
       - name: Install dependencies

@@ -7,7 +7,7 @@ description: Crear un nuevo endpoint REST siguiendo Clean Architecture en Go
 ## Prerrequisitos
 - Backend configurado con estructura Clean Architecture
 - Base de datos PostgreSQL corriendo
-- Go 1.21+ instalado
+- Go 1.23+ instalado
 
 ## Pasos
 

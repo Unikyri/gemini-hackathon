@@ -7,7 +7,7 @@ description: Genera código Go siguiendo Clean Architecture para Gemini Coding P
 
 ## Contexto
 
-Este proyecto usa **Go 1.21+** con **Clean Architecture** para el backend API REST.
+Este proyecto usa **Go 1.23+** con **Clean Architecture** para el backend API REST.
 El código debe seguir las convenciones y patrones establecidos.
 
 ---
