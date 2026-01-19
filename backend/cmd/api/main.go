@@ -1,5 +1,5 @@
-// Package main es el punto de entrada de la aplicación.
-// Aquí se inicializan las dependencias y se configura el servidor HTTP.
+// Package main is the application entry point.
+// Here we initialize dependencies and configure the HTTP server.
 package main
 
 import (
@@ -17,12 +17,12 @@ const (
 func main() {
 	log.Println("Gemini Coding Path API - Starting...")
 
-	// Configurar modo de Gin
+	// Configure Gin mode
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	// Crear router
+	// Create router
 	router := gin.Default()
 
 	// Health check endpoint
@@ -33,16 +33,16 @@ func main() {
 		})
 	})
 
-	// API v1 group (para futuros endpoints)
+	// API v1 group (for future endpoints)
 	api := router.Group("/api/v1")
 	{
-		// Placeholder para futuros endpoints
+		// Placeholder for future endpoints
 		api.GET("/ping", func(c *gin.Context) {
 			c.JSON(200, gin.H{"message": "pong"})
 		})
 	}
 
-	// Obtener puerto de variable de entorno o usar default
+	// Get port from environment variable or use default
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
