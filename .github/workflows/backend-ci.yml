@@ -40,13 +40,19 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
-          cache-dependency-path: backend/go.sum
+          cache-dependency-path: backend/go.mod
 
       # 3. Verify dependencies
       - name: Verify go.mod is tidy
         run: |
           go mod tidy
-          if ! git diff --exit-code go.mod go.sum; then
+          # Check if go.sum exists (it won't if there are no external dependencies)
+          if [ -f go.sum ]; then
+            FILES_TO_CHECK="go.mod go.sum"
+          else
+            FILES_TO_CHECK="go.mod"
+          fi
+          if ! git diff --exit-code $FILES_TO_CHECK; then
             echo ""
             echo "❌ ERROR: go.mod or go.sum changed after running 'go mod tidy'"
             echo ""
