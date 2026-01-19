@@ -1,0 +1,77 @@
+# =============================================================================
+# Dockerfile.runner - Sandbox seguro para ejecutar código de usuarios
+# =============================================================================
+# CONTROLES OWASP ASVS APLICADOS:
+# - V1.2.5: Protección contra OS command injection
+# - V1.3.6: Protección contra SSRF (network disabled externally)
+# - V5.3.1: Código no se ejecuta como servidor
+# - V15.2.5: Sandboxing de componentes peligrosos
+# =============================================================================
+
+# Etapa 1: Imagen base mínima con Go
+FROM golang:1.21-alpine AS base
+
+# Instalar certificados CA (por si acaso, aunque red estará deshabilitada)
+RUN apk --no-cache add ca-certificates
+
+# -----------------------------------------------------------------------------
+# Etapa 2: Imagen de ejecución (lo más mínima posible)
+# -----------------------------------------------------------------------------
+FROM alpine:3.19
+
+# Copiar binarios de Go desde la imagen base
+COPY --from=base /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:${PATH}"
+ENV GOPATH="/go"
+ENV GOCACHE="/tmp/go-cache"
+
+# -----------------------------------------------------------------------------
+# SEGURIDAD: Crear usuario no-root
+# -----------------------------------------------------------------------------
+# V15.2.5 - El código se ejecuta como usuario sin privilegios
+RUN addgroup -g 1001 -S runner && \
+    adduser -u 1001 -S runner -G runner -h /sandbox -s /bin/sh
+
+# Crear directorios necesarios con permisos correctos
+RUN mkdir -p /sandbox/code /sandbox/output /tmp/go-cache && \
+    chown -R runner:runner /sandbox /tmp/go-cache
+
+# -----------------------------------------------------------------------------
+# Directorio de trabajo
+# -----------------------------------------------------------------------------
+WORKDIR /sandbox/code
+
+# Cambiar a usuario no-root
+USER runner
+
+# -----------------------------------------------------------------------------
+# Configuración del entorno
+# -----------------------------------------------------------------------------
+# Deshabilitar CGO para builds más seguros y rápidos
+ENV CGO_ENABLED=0
+
+# Timeout por defecto (se puede sobrescribir)
+ENV EXECUTION_TIMEOUT=30
+
+# -----------------------------------------------------------------------------
+# Comando por defecto (se sobrescribe en docker-compose)
+# -----------------------------------------------------------------------------
+# El código del usuario se monta en /sandbox/code
+# Los tests se ejecutan con: go test -v -timeout ${EXECUTION_TIMEOUT}s ./...
+CMD ["sh", "-c", "go test -v -timeout ${EXECUTION_TIMEOUT}s ./..."]
+
+# -----------------------------------------------------------------------------
+# NOTAS DE SEGURIDAD:
+# -----------------------------------------------------------------------------
+# 1. Este contenedor DEBE ejecutarse con:
+#    - network_mode: none (sin acceso a red)
+#    - read_only: true (filesystem de solo lectura)
+#    - no-new-privileges: true (sin escalación de privilegios)
+#    - Límites de CPU y memoria
+#
+# 2. El código del usuario se monta como volumen en /sandbox/code
+#
+# 3. El usuario 'runner' (UID 1001) no tiene privilegios de root
+#
+# 4. Timeout máximo de 30 segundos por defecto
+# -----------------------------------------------------------------------------

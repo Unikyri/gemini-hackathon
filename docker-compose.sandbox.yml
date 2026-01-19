@@ -1,0 +1,128 @@
+# =============================================================================
+# docker-compose.sandbox.yml - Orquestación del sandbox seguro
+# =============================================================================
+# CONTROLES OWASP ASVS APLICADOS:
+# - V1.3.6: network_mode: none (protección SSRF)
+# - V5.2.1: Límites de recursos (protección DoS)
+# - V15.2.5: Sandboxing completo
+# =============================================================================
+#
+# USO:
+#   docker compose -f docker-compose.sandbox.yml build
+#   docker compose -f docker-compose.sandbox.yml run --rm code-runner
+#
+# =============================================================================
+
+services:
+  code-runner:
+    build:
+      context: ./sandbox
+      dockerfile: Dockerfile.runner
+    container_name: gemini-code-runner
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD: Sin acceso a red (V1.3.6 - Anti-SSRF)
+    # -------------------------------------------------------------------------
+    # El código del usuario NO puede:
+    # - Hacer requests HTTP a internet
+    # - Atacar otros servicios internos
+    # - Exfiltrar datos
+    network_mode: none
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD: Límites de recursos (V5.2.1 - Anti-DoS)
+    # -------------------------------------------------------------------------
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5' # Máximo 50% de un CPU
+          memory: 128M # Máximo 128MB de RAM
+        reservations:
+          cpus: '0.25' # Mínimo 25% de un CPU
+          memory: 64M # Mínimo 64MB de RAM
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD: Filesystem de solo lectura
+    # -------------------------------------------------------------------------
+    read_only: true
+
+    # Excepciones: directorios que necesitan escritura
+    tmpfs:
+      - /tmp:size=32M,mode=1777 # Para archivos temporales de Go
+      - /sandbox/output:size=16M,mode=1777 # Para output de tests
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD: Sin privilegios adicionales (V15.2.5)
+    # -------------------------------------------------------------------------
+    security_opt:
+      - no-new-privileges:true # No puede obtener más privilegios
+
+    # Remover todas las capabilities de Linux
+    cap_drop:
+      - ALL
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD: Límites adicionales
+    # -------------------------------------------------------------------------
+    # Límite de PIDs para evitar fork bombs
+    pids_limit: 50
+
+    # Timeout: el contenedor se mata después de 35 segundos
+    # (5 segundos extra para cleanup después del timeout de 30s del test)
+    stop_grace_period: 35s
+
+    # -------------------------------------------------------------------------
+    # Volúmenes
+    # -------------------------------------------------------------------------
+    volumes:
+      # El código del usuario se monta aquí (solo lectura)
+      - ./sandbox/submissions:/sandbox/code:ro
+
+      # Los tests generados por IA se montan aquí (solo lectura)
+      - ./sandbox/tests:/sandbox/tests:ro
+
+    # -------------------------------------------------------------------------
+    # Variables de entorno
+    # -------------------------------------------------------------------------
+    environment:
+      - EXECUTION_TIMEOUT=30
+      - GOCACHE=/tmp/go-cache
+      - HOME=/sandbox
+
+    # -------------------------------------------------------------------------
+    # Comando de ejecución
+    # -------------------------------------------------------------------------
+    # Ejecutar tests con timeout
+    command: >
+      sh -c "
+        cd /sandbox/code &&
+        timeout ${EXECUTION_TIMEOUT}s go test -v -json ./... 2>&1 || exit $?
+      "
+
+# =============================================================================
+# NOTAS DE IMPLEMENTACIÓN:
+# =============================================================================
+#
+# Para ejecutar código de un usuario:
+#
+# 1. El backend genera un directorio temporal con:
+#    - El código del usuario (main.go o similar)
+#    - Los tests generados por IA (_test.go)
+#
+# 2. Se monta ese directorio en /sandbox/code
+#
+# 3. Se ejecuta el contenedor:
+#    docker compose -f docker-compose.sandbox.yml run --rm code-runner
+#
+# 4. Se captura stdout/stderr para mostrar al usuario
+#
+# 5. El código de salida indica si los tests pasaron (0) o fallaron (!=0)
+#
+# EJEMPLO DE USO DESDE GO:
+#
+#   cmd := exec.Command("docker", "compose", 
+#       "-f", "docker-compose.sandbox.yml",
+#       "run", "--rm", "code-runner")
+#   output, err := cmd.CombinedOutput()
+#
+# =============================================================================
