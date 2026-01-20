@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import * as fc from 'fast-check';
 import { InstructionsPanel } from '../components/InstructionsPanel';
 
@@ -75,7 +75,7 @@ describe('InstructionsPanel - Property-Based Tests', () => {
             // Extract key words from markdown (alphanumeric words of significant length)
             const words = markdownContent
               .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-              .replace(/[*_#`\[\]()]/g, ' ') // Remove markdown syntax
+              .replace(/[*_#`[\]()]/g, ' ') // Remove markdown syntax
               .split(/\s+/)
               .filter(word => word.length > 3 && /[a-zA-Z0-9]/.test(word));
 
