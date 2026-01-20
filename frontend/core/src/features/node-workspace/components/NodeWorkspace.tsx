@@ -71,29 +71,52 @@ export const NodeWorkspace = ({ pathId, nodeId }: NodeWorkspaceProps) => {
         </div>
       </header>
 
-      {/* Main workspace con 3 paneles */}
+      {/* Main workspace con 3 columnas: 25% - 50% - 25% */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Panel Izquierdo: Instrucciones */}
-        <div className="w-1/3 min-w-[300px] max-w-[500px] overflow-hidden">
-          <InstructionsPanel 
+        {/* Panel Izquierdo: Instrucciones (25%) */}
+        <div className="w-1/4 min-w-[250px] overflow-hidden">
+          <InstructionsPanel
             markdownContent={markdownContent} 
             title="Enunciado"
           />
         </div>
 
-        {/* Panel Central: Editor de código */}
-        <div className="flex-1 overflow-hidden">
-          <CodeEditor 
+        {/* Panel Central: Editor de código (50%) */}
+        <div className="w-1/2 overflow-hidden">
+          <CodeEditor
             initialCode={boilerplateCode}
             language="go"
           />
         </div>
 
-        {/* Panel Derecho: Documentación y Misiones (futuro) */}
-        <div className="w-1/4 min-w-[250px] max-w-[400px] bg-white border-l border-gray-200">
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recursos</h3>
-            <p className="text-sm text-gray-500">Próximamente: Documentación y misiones secundarias</p>
+        {/* Panel Derecho: Info/Salida (25%) */}
+        <div className="w-1/4 min-w-[250px] bg-white border-l border-gray-200 overflow-hidden">
+          <div className="h-full flex flex-col">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Info / Salida</h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Documentación</h4>
+                  <p className="text-sm text-gray-500">
+                    Próximamente: Documentación contextual generada por IA
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Misiones Secundarias</h4>
+                  <p className="text-sm text-gray-500">
+                    Próximamente: Casos edge que otorgan XP adicional
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Resultados</h4>
+                  <p className="text-sm text-gray-500">
+                    Los resultados de los tests aparecerán aquí
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
